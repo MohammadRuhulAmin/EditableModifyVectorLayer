@@ -32,13 +32,13 @@ const vector = new VectorLayer({
   });
 
   const vectorLayer = new VectorLayer({
-    background: 'white', // for background color
+    background: '#000000', // for background color
     source: new VectorSource({
       url: 'assets/geojson.json',
       format: new GeoJSON(),
     }),
     style: function (feature) {
-      const color = feature.get('COLOR') || '#ffcc33';
+      const color = feature.get('COLOR') || '#90EE90';
       style.getFill().setColor(color);
       return style;
     },
