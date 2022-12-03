@@ -4,7 +4,7 @@ import View from 'ol/View';
 import {Fill, Stroke, Style} from 'ol/style';
 import {Draw, Modify, Snap} from 'ol/interaction';
 import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer';
-import {get} from 'ol/proj';
+import {get,transform} from 'ol/proj';
 import {OSM, Vector as VectorSource} from 'ol/source';
 
 
@@ -24,15 +24,15 @@ const vector = new VectorLayer({
     source: source,
     style: {
       'fill-color': 'rgba(0,255,0,0.3)',
-      'stroke-color': '#ffcc33',
+      'stroke-color': '#0000FF',
       'stroke-width': 2,
       'circle-radius': 7,
-      'circle-fill-color': '#ffcc33',
+      'circle-fill-color': '#0000FF',
     },
   });
 
   const vectorLayer = new VectorLayer({
-    background: '#1a2b39',
+    background: 'white', // for background color
     source: new VectorSource({
       url: 'assets/geojson.json',
       format: new GeoJSON(),
@@ -54,8 +54,8 @@ extent[2] += extent[2];
     layers: [vectorLayer,vector],
     target: 'map',
     view: new View({
-      center: [0, 0],
-      zoom: 4,
+      center: transform([90.19530825000014,24.988718323000086], 'EPSG:4326', 'EPSG:3857'),
+      zoom:16,
     }),
   });
 
