@@ -4,7 +4,7 @@ import View from 'ol/View';
 import {Fill, Stroke, Style} from 'ol/style';
 import {Draw, Modify, Snap} from 'ol/interaction';
 import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer';
-import {get,transform} from 'ol/proj';
+import {get,transform,fromLonLat} from 'ol/proj';
 import {OSM, Vector as VectorSource} from 'ol/source';
 
 
@@ -15,9 +15,9 @@ const style = new Style({
       color: '#eeeeee',
     }),
 });
-const raster = new TileLayer({
-    source: new OSM(),
-  });
+// const raster = new TileLayer({
+//     source: new OSM(),
+//   });
   
 const source = new VectorSource();
 const vector = new VectorLayer({
@@ -31,11 +31,47 @@ const vector = new VectorLayer({
     },
   });
 
+/**
+ * 
+ * fetch('assets/geojson.json')
+  .then(function (response) {
+    return response.json();
+  })
+  .then(function (json) {
+    const format = new GeoJSON();
+    const features = format.readFeatures(json);
+    const street = features[0];
+
+    // convert to a turf.js feature
+    const turfLine = format.writeFeatureObject(street);
+
+    // show a marker every 200 meters
+    const distance = 0.1;
+
+    // get the line length in kilometers
+    const length = turf.lineDistance(turfLine, 'kilometers');
+    for (let i = 1; i <= length / distance; i++) {
+      const turfPoint = turf.along(turfLine, i * distance, 'kilometers');
+
+      // convert the generated point to a OpenLayers feature
+      const marker = format.readFeature(turfPoint);
+      marker.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+      source.addFeature(marker);
+    }
+
+    street.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+    source.addFeature(street);
+  });
+
+ * 
+ */
+
+
   const vectorLayer = new VectorLayer({
     background: '#000000', // for background color
     source: new VectorSource({
       url: 'assets/geojson.json',
-      format: new GeoJSON(),
+      format: new GeoJSON()
     }),
     style: function (feature) {
       const color = feature.get('COLOR') || '#90EE90';

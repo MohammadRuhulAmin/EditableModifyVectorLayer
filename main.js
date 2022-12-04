@@ -4,8 +4,9 @@ import View from 'ol/View';
 import {Fill, Stroke, Style} from 'ol/style';
 import {Draw, Modify, Snap} from 'ol/interaction';
 import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer';
-import {get,transform} from 'ol/proj';
+import {get,transform,fromLonLat} from 'ol/proj';
 import {OSM, Vector as VectorSource} from 'ol/source';
+
 
 
 
@@ -44,11 +45,11 @@ const vector = new VectorLayer({
     },
   });
 
-// -----added 
+
 const extent = get('EPSG:3857').getExtent().slice();
 extent[0] += extent[0];
 extent[2] += extent[2];
-//-----
+
 
   const map = new Map({
     layers: [vectorLayer,vector],
