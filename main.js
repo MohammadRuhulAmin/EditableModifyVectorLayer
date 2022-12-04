@@ -1,81 +1,89 @@
 import GeoJSON from 'ol/format/GeoJSON';
 import Map from 'ol/Map';
-import VectorLayer from 'ol/layer/Vector';
-import VectorSource from 'ol/source/Vector';
 import View from 'ol/View';
 import {Fill, Stroke, Style} from 'ol/style';
+import {Draw, Modify, Snap} from 'ol/interaction';
+import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer';
+import {get,transform} from 'ol/proj';
+import {OSM, Vector as VectorSource} from 'ol/source';
+
+
+
 
 const style = new Style({
-  fill: new Fill({
-    color: '#eeeeee',
-  }),
-});
-
-const vectorLayer = new VectorLayer({
-  background: '#1a2b39',
-  source: new VectorSource({
-    url: 'https://openlayers.org/data/vector/ecoregions.json',
-    format: new GeoJSON(),
-  }),
-  style: function (feature) {
-    const color = feature.get('COLOR') || '#eeeeee';
-    style.getFill().setColor(color);
-    return style;
-  },
-});
-
-const map = new Map({
-  layers: [vectorLayer],
-  target: 'map',
-  view: new View({
-    center: [0, 0],
-    zoom: 1,
-  }),
-});
-
-const featureOverlay = new VectorLayer({
-  source: new VectorSource(),
-  map: map,
-  style: new Style({
-    stroke: new Stroke({
-      color: 'rgba(255, 255, 255, 0.7)',
-      width: 2,
+    fill: new Fill({
+      color: '#eeeeee',
     }),
-  }),
 });
-
-let highlight;
-const displayFeatureInfo = function (pixel) {
-  const feature = map.forEachFeatureAtPixel(pixel, function (feature) {
-    return feature;
+const raster = new TileLayer({
+    source: new OSM(),
+  });
+  
+const source = new VectorSource();
+const vector = new VectorLayer({
+    source: source,
+    style: {
+      'fill-color': 'rgba(0,255,0,0.3)',
+      'stroke-color': '#0000FF',
+      'stroke-width': 2,
+      'circle-radius': 7,
+      'circle-fill-color': '#0000FF',
+    },
   });
 
-  const info = document.getElementById('info');
-  if (feature) {
-    info.innerHTML = feature.get('ECO_NAME') || '&nbsp;';
-  } else {
-    info.innerHTML = '&nbsp;';
-  }
+  const vectorLayer = new VectorLayer({
+    background: '#000000', // for background color
+    source: new VectorSource({
+      url: 'assets/geojson.json',
+      format: new GeoJSON(),
+    }),
+    style: function (feature) {
+      const color = feature.get('COLOR') || '#90EE90';
+      style.getFill().setColor(color);
+      return style;
+    },
+  });
 
-  if (feature !== highlight) {
-    if (highlight) {
-      featureOverlay.getSource().removeFeature(highlight);
-    }
-    if (feature) {
-      featureOverlay.getSource().addFeature(feature);
-    }
-    highlight = feature;
-  }
-};
+// -----added 
+const extent = get('EPSG:3857').getExtent().slice();
+extent[0] += extent[0];
+extent[2] += extent[2];
+//-----
 
-map.on('pointermove', function (evt) {
-  if (evt.dragging) {
-    return;
-  }
-  const pixel = map.getEventPixel(evt.originalEvent);
-  displayFeatureInfo(pixel);
-});
+  const map = new Map({
+    layers: [vectorLayer,vector],
+    target: 'map',
+    view: new View({
+      center: transform([90.19530825000014,24.988718323000086], 'EPSG:4326', 'EPSG:3857'),
+      zoom:16,
+    }),
+  });
 
-map.on('click', function (evt) {
-  displayFeatureInfo(evt.pixel);
-});
+  const modify = new Modify({source: source});
+  map.addInteraction(modify);
+  let draw, snap; // global so we can remove them later
+  const typeSelect = document.getElementById('type');
+  
+  function addInteractions() {
+    draw = new Draw({
+      source: source,
+      type: typeSelect.value,
+    });
+    map.addInteraction(draw);
+    snap = new Snap({source: source});
+    map.addInteraction(snap);
+  }
+  typeSelect.onchange = function () {
+    map.removeInteraction(draw);
+    map.removeInteraction(snap);
+    addInteractions();
+  };
+  
+  addInteractions();
+
+
+
+
+
+
+
