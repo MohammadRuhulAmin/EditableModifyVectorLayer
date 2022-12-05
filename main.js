@@ -10,15 +10,14 @@ import {OSM, Vector as VectorSource} from 'ol/source';
 
 
 
-
 const style = new Style({
     fill: new Fill({
       color: '#eeeeee',
     }),
 });
-const raster = new TileLayer({
-    source: new OSM(),
-  });
+// const raster = new TileLayer({
+//     source: new OSM(),
+//   });
   
 const source = new VectorSource();
 const vector = new VectorLayer({
@@ -32,11 +31,14 @@ const vector = new VectorLayer({
     },
   });
 
+
+
+
   const vectorLayer = new VectorLayer({
     background: '#000000', // for background color
     source: new VectorSource({
       url: 'assets/geojson.json',
-      format: new GeoJSON(),
+      format: new GeoJSON()
     }),
     style: function (feature) {
       const color = feature.get('COLOR') || '#90EE90';
@@ -45,11 +47,11 @@ const vector = new VectorLayer({
     },
   });
 
-
+// -----added 
 const extent = get('EPSG:3857').getExtent().slice();
 extent[0] += extent[0];
 extent[2] += extent[2];
-
+//-----
 
   const map = new Map({
     layers: [vectorLayer,vector],
@@ -62,6 +64,7 @@ extent[2] += extent[2];
 
   const modify = new Modify({source: source});
   map.addInteraction(modify);
+  
   let draw, snap; // global so we can remove them later
   const typeSelect = document.getElementById('type');
   
@@ -73,15 +76,27 @@ extent[2] += extent[2];
     map.addInteraction(draw);
     snap = new Snap({source: source});
     map.addInteraction(snap);
+    // display the draw coordinate 
+    draw.on('drawend', function(evt) { 
+      console.log(evt.feature.getGeometry().getCoordinates());
+    });
   }
+
   typeSelect.onchange = function () {
     map.removeInteraction(draw);
     map.removeInteraction(snap);
     addInteractions();
   };
   
+  
+  
   addInteractions();
 
+
+// display the modifyed coordinate
+modify.on('modifyend', function(evt) { 
+    console.log(evt.features.item(0).getGeometry().getCoordinates());
+  });
 
 
 
